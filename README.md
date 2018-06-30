@@ -52,8 +52,7 @@
   4. 동적 오브젝트 생성(new GameObject(name)) 에서의 자동주입은 당연히 미지원 입니다. 대신 유니티 기본 내장 되어있는 GetComponent 를 사용하세요.
   5. 다른 커스텀 에디터를 사용중이고, 컴퍼넌트 추가할때 자동주입되기를 원하신다면 Editor 코드의 OnEnable 구현 혹은 상속을 받은 후
      CAutoInjectionEditor.InjectFrom_SerializedObject(serializedObject, false); 를 호출하세요.
-  6. 컴파일 된 후 플레이 버튼을 누를시에 자동으로 감지되고 플레이가 풀리면서 재주입이 됩니다.
-     그 이후 다시 정상적으로 플레이가 진행됩니다.
+  6. 컴파일 중일때 플레이 버튼을 누르면 컴파일이 끝난 뒤 자동주입 후 플레이됩니다.
   
 기타 피드백은 및 개선사항은 Issues 에 작성해주세요.
 
