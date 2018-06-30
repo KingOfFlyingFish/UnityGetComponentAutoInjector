@@ -32,13 +32,16 @@ namespace UnityEditor
         [InitializeOnLoadMethod]
         private static void OnPostCompile()
         {
-            if (EditorApplication.isCompiling || EditorApplication.isTemporaryProject || EditorApplication.isPlayingOrWillChangePlaymode)
+#if !UNITY_5
+            if (Application.isFocused 
+                || EditorApplication.isCompiling || EditorApplication.isTemporaryProject || EditorApplication.isPlayingOrWillChangePlaymode)
             {
                 return;
             }
+#endif
 
-            Debug.Log("InitializeOnLoadMethod");
-            var objects = Editor.FindObjectsOfType<MonoBehaviour>();
+            Debug.Log("RuntimeInitializeOnLoadMethod");
+            var objects = FindObjectsOfType<MonoBehaviour>();
             if (objects == null)
             {
                 return;
