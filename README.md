@@ -50,7 +50,8 @@
   4. 에디터 상에서만 동작되며 빌드시에는 아무런 문제가 없습니다. 안심하셔도 됩니다.
   5. 이 에셋을 사용전에 이미 오브젝트가 Prefab 화가 되어있다면 다시 에디터로 옮겨서 재 주입을 시켜야 됩니다. (에러가 날 경우에만)
   6. 동적 오브젝트 생성(new GameObject(name)) 에서의 자동주입은 당연히 미지원 입니다. 대신 유니티 기본 내장 되어있는 GetComponent 를 사용하세요.
-  
+  7. 다른 커스텀 에디터를 사용중이고, 컴퍼넌트 추가할때 자동주입되기를 원하신다면 Editor 코드의 OnEnable 구현 혹은 상속을 받은 후
+     CAutoInjectionEditor.InjectFrom_SerializedObject(serializedObject, false); 를 호출하세요.
   
 기타 피드백은 및 개선사항은 Issues 에 작성해주세요.
 
