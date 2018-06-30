@@ -123,10 +123,7 @@ namespace UnityEditor
 						property.objectReferenceValue = null;
 
 						if (IsGetComponentAttribute(obj, attribute, fieldInfo, fieldType, out componentOut))
-						{
-							Debug.Log(componentOut);
 							property.objectReferenceValue = (componentOut as UnityEngine.Object);
-						}
 						else
 							LogToInjectionFailed(obj, attribute, fieldInfo);
 					}
