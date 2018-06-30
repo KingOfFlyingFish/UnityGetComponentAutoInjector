@@ -20,7 +20,8 @@ namespace UnityEditor
 	public class CAutoInjectionEditor : Editor 
     {
 		private const string _isPressedPlayButton = "isPressedPlayButton";
-		private const string _isPlayWithInjected = "isPlayWithInjected";
+		private const string _injectionToPlay = "injectionToPlay";
+		private const string _exitingPlayMode = "exitingPlayMode";
 
 		private static HashSet<int> _hashCodes = new HashSet<int>();
 
@@ -31,9 +32,11 @@ namespace UnityEditor
 		}
 
 		private static void OnChangeStateEditor(PlayModeStateChange state)
-		{
+		{ 
+			if (EditorPrefs.GetBool(_injectionToPlay)) return;
+
 			if (state == PlayModeStateChange.ExitingPlayMode)
-				InjectFor_CurrentScene();
+				EditorPrefs.SetBool(_exitingPlayMode, true);
 		}
 
 		[MenuItem("CONTEXT/MonoBehaviour/Force auto inject this")]
@@ -42,7 +45,7 @@ namespace UnityEditor
 			InjectFrom_NoneSerializedObject(cmd.context, true);
 		}
 
-		[DidReloadScripts]
+		[DidReloadScripts] 
 		private static void OnReloadScripts()
 		{
 			InjectFor_CurrentScene();
@@ -50,13 +53,16 @@ namespace UnityEditor
 
 		private static void OnUpdateEditor()
 		{
-			if (EditorPrefs.GetBool(_isPlayWithInjected))
+			if (EditorPrefs.GetBool(_injectionToPlay))
 			{
 				InjectFor_CurrentScene();
 
-				EditorPrefs.SetBool(_isPlayWithInjected, false);
+				EditorPrefs.SetBool(_injectionToPlay, false);
 				EditorApplication.isPlaying = true;
 			}
+
+			if (EditorApplication.isPlaying == false && EditorPrefs.GetBool(_exitingPlayMode))
+				InjectFor_CurrentScene();
 
 			if (EditorApplication.isCompiling)
 			{
@@ -72,15 +78,15 @@ namespace UnityEditor
 			{
 				if (EditorPrefs.GetBool(_isPressedPlayButton))
 				{
-					EditorApplication.isPlaying = false;
-
 					EditorPrefs.SetBool(_isPressedPlayButton, false);
-					EditorPrefs.SetBool(_isPlayWithInjected, true);
+					EditorPrefs.SetBool(_injectionToPlay, true);
+
+					EditorApplication.isPlaying = false;
 				}
-			}
+			}  
 		}
 
-		public static void InjectFor_CurrentScene()
+		public static void InjectFor_CurrentScene(bool forceInject = false)
 		{
 			if (EditorApplication.isPlayingOrWillChangePlaymode) return;
 
@@ -103,7 +109,7 @@ namespace UnityEditor
 					MonoBehaviour mono = monos[j];
 					if (mono == null) continue;
 
-					InjectFrom_NoneSerializedObject(mono, false);
+					InjectFrom_NoneSerializedObject(mono, forceInject);
 				}
 			}
 		}
