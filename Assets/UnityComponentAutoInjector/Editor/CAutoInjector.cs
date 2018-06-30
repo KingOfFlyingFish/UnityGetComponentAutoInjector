@@ -18,17 +18,7 @@ namespace UnityEditor
 	{
 		private static readonly BindingFlags _bindingFlags = (BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-		public static void Inject(SerializedObject serializedObject, bool forceInject)
-		{
-			UnityEngine.Object target = serializedObject.targetObject;
-
-			if (target == null) return;
-			if (PrefabUtility.GetPrefabType(target) == PrefabType.Prefab) return;
-
-			Inject(serializedObject, target, forceInject);
-		}
-
-		private static void Inject(SerializedObject serializedObject, UnityEngine.Object obj, bool forceInject)
+		public static void Inject(SerializedObject serializedObject, UnityEngine.Object obj, bool forceInject)
 		{
 			FieldInfo[] fields = obj.GetType().GetFieldInfoWithBaseClass(_bindingFlags);
 

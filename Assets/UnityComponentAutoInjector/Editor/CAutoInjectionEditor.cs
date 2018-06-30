@@ -13,15 +13,16 @@ namespace UnityEditor
     using UnityEngine;
 	using UnityEngine.SceneManagement;
 	using UnityEditor.Callbacks;
+	using System.Collections.Generic;
 
 	[CustomEditor(typeof(MonoBehaviour), true), CanEditMultipleObjects]
 	[InitializeOnLoad]
-	public class CAutoInjectionEditor : Editor
+	public class CAutoInjectionEditor : Editor 
     {
 		private const string _isPressedPlayButton = "isPressedPlayButton";
 		private const string _isPlayWithInjected = "isPlayWithInjected";
-		private const string _isPlayWithInjectedTime = "_isPlayWithInjectedTime";
-		private const float _delayedInjectionTime = 1.5f;
+
+		private static HashSet<int> _hashCodes = new HashSet<int>();
 
 		static CAutoInjectionEditor()
 		{
@@ -31,70 +32,50 @@ namespace UnityEditor
 		[MenuItem("CONTEXT/MonoBehaviour/Force auto inject this")]
         private static void ForceInject(MenuCommand cmd)
         {
-			if (EditorApplication.isPlaying) return;
-
-			Object obj = cmd.context;
-
-			bool isSupported = true;
-			try
-			{
-				MonoBehaviour mono = (obj as MonoBehaviour);
-			}
-			catch
-			{
-				Debug.LogError("Only monobehaviour type supported");
-				isSupported = false;
-			}
-
-			if (isSupported)
-				InjectFrom_NoneSerializedObject(obj, true);
-		}
-
-		private static void OnUpdateEditor()
-		{
-			bool isPressedPlayButton = EditorPrefs.GetBool(_isPressedPlayButton);
-
-			if (EditorApplication.isPlaying == false && EditorApplication.isCompiling && EditorApplication.isPlayingOrWillChangePlaymode)
-			{ 
-				if (isPressedPlayButton == false)
-				{
-					EditorPrefs.SetBool(_isPressedPlayButton, true);
-					CDebug.Log("<color=red><b>Editor compiling and change play mode is detected!\n",
-					"After ", _delayedInjectionTime, " seconds, the play mode is stopped and the auto injection is completed and then play mode again.</b></color>");
-				}
-			}
-
-			bool isPlayWithInjected = EditorPrefs.GetBool(_isPlayWithInjected);
-			if (isPlayWithInjected)
-			{
-				float time = EditorPrefs.GetFloat(_isPlayWithInjectedTime);
-				if (time < EditorApplication.timeSinceStartup)
-				{
-					InjectFor_CurrentScene(); 
-
-					EditorPrefs.SetBool(_isPlayWithInjected, false);
-					EditorApplication.isPlaying = true;
-				}
-			}
+			InjectFrom_NoneSerializedObject(cmd.context, true);
 		}
 
 		[DidReloadScripts]
 		private static void OnReloadScripts()
 		{
-			if (EditorApplication.isCompiling && EditorApplication.isPlaying)
-				EditorApplication.isPlaying = false; 
+			if (EditorApplication.isPlayingOrWillChangePlaymode) return;
 
-			bool isPressedPlayButton = EditorPrefs.GetBool(_isPressedPlayButton);
-			if (isPressedPlayButton)
+			InjectFor_CurrentScene();
+		}
+
+		private static void OnUpdateEditor()
+		{
+			if (EditorPrefs.GetBool(_isPlayWithInjected))
 			{
-				EditorApplication.isPlaying = false;
+				InjectFor_CurrentScene();
 
-				EditorPrefs.SetBool(_isPressedPlayButton, false);
-				EditorPrefs.SetBool(_isPlayWithInjected, true);
-				EditorPrefs.SetFloat(_isPlayWithInjectedTime, (float)EditorApplication.timeSinceStartup + _delayedInjectionTime);
+				EditorPrefs.SetBool(_isPlayWithInjected, false);
+				EditorApplication.isPlaying = true;
+			}
+
+			if (EditorApplication.isCompiling)
+			{
+				if (EditorApplication.isPlayingOrWillChangePlaymode)
+				{
+					if (EditorPrefs.GetBool(_isPressedPlayButton) == false)
+					{
+						EditorPrefs.SetBool(_isPressedPlayButton, true);
+
+						CDebug.Log("<color=red><b>Editor compiling and change play mode is detected!\n",
+						"After few seconds, the play mode is stopped and the auto injection is completed and then play mode again.</b></color>");
+					}
+				}
 			}
 			else
-				InjectFor_CurrentScene();
+			{
+				if (EditorPrefs.GetBool(_isPressedPlayButton))
+				{
+					EditorApplication.isPlaying = false;
+
+					EditorPrefs.SetBool(_isPressedPlayButton, false);
+					EditorPrefs.SetBool(_isPlayWithInjected, true);
+				}
+			}
 		}
 
 		public static void InjectFor_CurrentScene()
@@ -130,10 +111,20 @@ namespace UnityEditor
 
 		public static void InjectFrom_SerializedObject(SerializedObject serializedObject, bool forceInject)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+			if (EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode) return;
+
+			Object target = serializedObject.targetObject;
+			if (target == null) return;
+
+			if (PrefabUtility.GetPrefabType(target) == PrefabType.Prefab) return;
+
+			int hashCode = target.GetHashCode();
+			if (forceInject == false && _hashCodes.Contains(hashCode)) return;
+
+			_hashCodes.Add(hashCode);
 
 			serializedObject.Update();
-				CAutoInjector.Inject(serializedObject, forceInject);
+				CAutoInjector.Inject(serializedObject, target, forceInject);
 			serializedObject.ApplyModifiedProperties();
 		}
 
