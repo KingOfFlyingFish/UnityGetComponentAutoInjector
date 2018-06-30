@@ -6,6 +6,7 @@
 #endregion Header
 
 #if UNITY_EDITOR
+
 namespace UnityEditor
 {
 	using System;

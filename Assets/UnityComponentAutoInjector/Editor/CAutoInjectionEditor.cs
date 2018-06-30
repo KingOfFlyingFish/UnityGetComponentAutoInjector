@@ -1,26 +1,24 @@
 ﻿#region Header
-
 /* ============================================
  *	작성자 : KJH
    ============================================ */
-
 #endregion Header
 
 #if UNITY_EDITOR
 
 namespace UnityEditor
 {
-    using UnityEngine;
+	using UnityEngine;
 	using UnityEngine.SceneManagement;
 	using UnityEditor.Callbacks;
 	using System.Collections.Generic;
 
 	[CustomEditor(typeof(MonoBehaviour), true), CanEditMultipleObjects]
 	[InitializeOnLoad]
-	public class CAutoInjectionEditor : Editor 
-    {
+	public class CAutoInjectionEditor : Editor
+	{
 		private const string _isPressedPlayButton = "isPressedPlayButton";
-		private const string _injectionToPlay = "injectionToPlay";
+		private const string _injectionToNextFrame = "injectionToNextFrame";
 		private const string _exitingPlayMode = "exitingPlayMode";
 
 		private static HashSet<int> _hashCodes = new HashSet<int>();
@@ -32,20 +30,20 @@ namespace UnityEditor
 		}
 
 		private static void OnChangeStateEditor(PlayModeStateChange state)
-		{ 
-			if (EditorPrefs.GetBool(_injectionToPlay)) return;
+		{
+			if (EditorPrefs.GetBool(_injectionToNextFrame)) return;
 
 			if (state == PlayModeStateChange.ExitingPlayMode)
 				EditorPrefs.SetBool(_exitingPlayMode, true);
 		}
 
 		[MenuItem("CONTEXT/MonoBehaviour/Force auto inject this")]
-        private static void ForceInject(MenuCommand cmd)
-        {
+		private static void ForceInject(MenuCommand cmd)
+		{
 			InjectFrom_NoneSerializedObject(cmd.context, true);
 		}
 
-		[DidReloadScripts] 
+		[DidReloadScripts]
 		private static void OnReloadScripts()
 		{
 			InjectFor_CurrentScene();
@@ -55,12 +53,12 @@ namespace UnityEditor
 		{
 			if (EditorApplication.isPlaying && EditorApplication.isCompiling)
 				EditorApplication.isPlaying = false;
-			
-			if (EditorPrefs.GetBool(_injectionToPlay))
+
+			if (EditorPrefs.GetBool(_injectionToNextFrame))
 			{
 				InjectFor_CurrentScene();
 
-				EditorPrefs.SetBool(_injectionToPlay, false);
+				EditorPrefs.SetBool(_injectionToNextFrame, false);
 				EditorApplication.isPlaying = true;
 			}
 
@@ -73,20 +71,22 @@ namespace UnityEditor
 				{
 					EditorPrefs.SetBool(_isPressedPlayButton, true);
 
-					CDebug.Log("<color=red><b>Editor compiling and change play mode is detected!\n",
-					"After few seconds, the play mode is stopped and the auto injection is completed and then play mode again.</b></color>");
+					CDebug.Log("<color=red><b>Editor compiling and play mode is detected!\n",
+					"After few seconds, the auto injection is completed and then play mode again.</b></color>");
 				}
+
+				EditorApplication.isPlaying = false;
 			}
 			else
 			{
 				if (EditorPrefs.GetBool(_isPressedPlayButton))
 				{
 					EditorPrefs.SetBool(_isPressedPlayButton, false);
-					EditorPrefs.SetBool(_injectionToPlay, true);
+					EditorPrefs.SetBool(_injectionToNextFrame, true);
 
 					EditorApplication.isPlaying = false;
 				}
-			}  
+			}
 		}
 
 		public static void InjectFor_CurrentScene(bool forceInject = false)
@@ -94,7 +94,7 @@ namespace UnityEditor
 			if (EditorApplication.isPlayingOrWillChangePlaymode) return;
 
 			Scene currentScene = SceneManager.GetActiveScene();
-			 
+
 			GameObject[] gameObjects = currentScene.GetRootGameObjects();
 			if (gameObjects == null) return;
 
@@ -120,7 +120,7 @@ namespace UnityEditor
 		public static void InjectFrom_NoneSerializedObject(Object obj, bool forceInject)
 		{
 			InjectFrom_SerializedObject(new SerializedObject(obj), forceInject);
-		} 
+		}
 
 		public static void InjectFrom_SerializedObject(SerializedObject serializedObject, bool forceInject)
 		{
@@ -142,10 +142,10 @@ namespace UnityEditor
 		}
 
 		private void OnEnable()
-        {
+		{
 			InjectFrom_SerializedObject(serializedObject, false);
 		}
-    }
+	}
 }
 
 #endif
