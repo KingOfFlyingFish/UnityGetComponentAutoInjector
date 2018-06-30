@@ -24,16 +24,6 @@ public static class CStringExtends
 		return _builder.ToString();
 	}
 
-	public static string ToMMSS(this int sec)
-	{
-		return string.Format("{0:D2}:{1:D2}", (int)((sec / 60f) % 60f), (int)(sec % 60f));
-	}
-
-	public static string ToHHMMSS(this int sec)
-	{
-		return string.Format("{0:D2}:{1:D2}:{2:D2}", sec / 3600f, (sec / 60f) % 60f, sec % 60f);
-	}
-
 	public static bool EqualsLower(this string x, string y)
 	{
 		return x.ToLower().Equals(y.ToLower());

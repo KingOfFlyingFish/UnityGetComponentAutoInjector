@@ -22,7 +22,7 @@ public static class CGetComponentExtends
 	public static UnityEngine.Object GetComponent(this Component component, Type type)
 	{
 		if (IsGameObjectType(type))
-			return component.GetGameObject();
+			return component.gameObject;
 
 		return component.GetComponent(type);
 	}
@@ -102,13 +102,6 @@ public static class CGetComponentExtends
 
 		return null;
 	}
-
-	public static GameObject GetGameObject(this Component component)
-	{
-		Transform transform = component.GetComponent<Transform>();
-
-		return transform.gameObject;
-	} 
 
 	public static GameObject GetGameObjectInChildrenName(this Component component, string objectName = null)
 	{

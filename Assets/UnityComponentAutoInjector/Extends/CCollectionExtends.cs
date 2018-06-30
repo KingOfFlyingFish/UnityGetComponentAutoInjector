@@ -22,25 +22,4 @@ public static class CCollectionExtends
 
 		return array;
 	}
-
-	public static bool TryGetValueThrow<T_KEY, T_VALUE>(this IDictionary<T_KEY, T_VALUE> map, T_KEY tKey, out T_VALUE tValueOut, string strHeader, string strSub)
-	{
-		if (map.TryGetValue(tKey, out tValueOut) == false)
-			ThrowDebug(tKey, strHeader, strSub);
-
-		return true;
-	}
-
-	public static bool ContainKeyThrow<T_KEY, T_VALUE>(this IDictionary<T_KEY, T_VALUE> map, T_KEY tKey, string strHeader, string strSub)
-	{
-		if (map.ContainsKey(tKey) == false)
-			ThrowDebug(tKey, strHeader, strSub);
-
-		return true;
-	}
-
-	public static void ThrowDebug<T_KEY>(T_KEY tKey, string strHeader = "Header", string strSub = "Sub")
-	{
-		throw new System.Exception(string.Format("{0} -> {1} : [{2}][null]...\n\n", strHeader, strSub, tKey));
-	}
 }

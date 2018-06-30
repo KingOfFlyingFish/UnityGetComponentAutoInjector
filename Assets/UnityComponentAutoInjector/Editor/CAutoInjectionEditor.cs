@@ -39,8 +39,6 @@ namespace UnityEditor
                 return;
             }
 #endif
-
-            Debug.Log("RuntimeInitializeOnLoadMethod");
             var objects = FindObjectsOfType<MonoBehaviour>();
             if (objects == null)
             {
@@ -83,13 +81,11 @@ namespace UnityEditor
 
         private void OnEnable()
         {
-            Debug.Log("OnEnable");
             AutoInjectionWithForceList(serializedObject);
         }
 
         private void OnDisable()
         {
-            Debug.Log("OnDisable");
             Clear();
         }
     }

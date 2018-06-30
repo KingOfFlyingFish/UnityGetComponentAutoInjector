@@ -123,7 +123,10 @@ namespace UnityEditor
 						property.objectReferenceValue = null;
 
 						if (IsGetComponentAttribute(obj, attribute, fieldInfo, fieldType, out componentOut))
+						{
+							Debug.Log(componentOut);
 							property.objectReferenceValue = (componentOut as UnityEngine.Object);
+						}
 						else
 							LogToInjectionFailed(obj, attribute, fieldInfo);
 					}
@@ -162,7 +165,7 @@ namespace UnityEditor
 			else if (attribute is FindObjectOfTypeAttribute)
 				componentsOut = typeof(UnityEngine.Object).Invoke(obj, "FindObjectsOfType", new[] { typeof(Type) }, elementType);
 
-			return (componentsOut != null);
+			return componentsOut.IsValidType();
 		}
 
 		private static bool IsGetComponentAttribute(UnityEngine.Object obj, object attribute, FieldInfo fieldInfo, Type fieldType, out object componentOut)
@@ -198,7 +201,7 @@ namespace UnityEditor
 			else if (attribute is FindObjectOfTypeAttribute)
 				componentOut = typeof(UnityEngine.Object).Invoke(obj, "FindObjectOfType", new[] { typeof(Type) }, fieldType);
 
-			return (componentOut != null);
+			return componentOut.IsValidType();
 		}
 
 		private static void LogToInjectionFailed(UnityEngine.Object obj, object attribute, FieldInfo fieldInfo)
@@ -215,6 +218,15 @@ namespace UnityEditor
 		private static void LogToInjectionComplete(UnityEngine.Object obj)
 		{
 			CDebug.Log(obj, "<b><i>", obj, " <color=green>Auto injection complete.</color></i></b>");
+		}
+
+		private static bool IsValidType(this object referenceType)
+		{
+			if (referenceType == null) return false;
+
+			if (referenceType.ToString().Equals("null")) return false;
+
+			return true;
 		}
 	}
 }
