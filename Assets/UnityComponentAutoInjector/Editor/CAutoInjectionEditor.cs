@@ -27,6 +27,13 @@ namespace UnityEditor
 		static CAutoInjectionEditor()
 		{
 			EditorApplication.update += OnUpdateEditor;
+			EditorApplication.playModeStateChanged += OnChangeStateEditor;
+		}
+
+		private static void OnChangeStateEditor(PlayModeStateChange state)
+		{
+			if (state == PlayModeStateChange.ExitingPlayMode)
+				InjectFor_CurrentScene();
 		}
 
 		[MenuItem("CONTEXT/MonoBehaviour/Force auto inject this")]
@@ -38,8 +45,6 @@ namespace UnityEditor
 		[DidReloadScripts]
 		private static void OnReloadScripts()
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-
 			InjectFor_CurrentScene();
 		}
 
@@ -55,15 +60,12 @@ namespace UnityEditor
 
 			if (EditorApplication.isCompiling)
 			{
-				if (EditorApplication.isPlayingOrWillChangePlaymode)
+				if (EditorApplication.isPlayingOrWillChangePlaymode && EditorPrefs.GetBool(_isPressedPlayButton) == false)
 				{
-					if (EditorPrefs.GetBool(_isPressedPlayButton) == false)
-					{
-						EditorPrefs.SetBool(_isPressedPlayButton, true);
+					EditorPrefs.SetBool(_isPressedPlayButton, true);
 
-						CDebug.Log("<color=red><b>Editor compiling and change play mode is detected!\n",
-						"After few seconds, the play mode is stopped and the auto injection is completed and then play mode again.</b></color>");
-					}
+					CDebug.Log("<color=red><b>Editor compiling and change play mode is detected!\n",
+					"After few seconds, the play mode is stopped and the auto injection is completed and then play mode again.</b></color>");
 				}
 			}
 			else
@@ -79,7 +81,9 @@ namespace UnityEditor
 		}
 
 		public static void InjectFor_CurrentScene()
-		{ 
+		{
+			if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+
 			Scene currentScene = SceneManager.GetActiveScene();
 			 
 			GameObject[] gameObjects = currentScene.GetRootGameObjects();
