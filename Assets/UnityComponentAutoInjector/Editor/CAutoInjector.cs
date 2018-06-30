@@ -20,9 +20,12 @@ namespace UnityEditor
 
 		public static void Inject(SerializedObject serializedObject, bool forceInject)
 		{
-			if (serializedObject.targetObject == null) return;
-			 
-			Inject(serializedObject, serializedObject.targetObject, forceInject);
+			UnityEngine.Object target = serializedObject.targetObject;
+
+			if (target == null) return;
+			if (PrefabUtility.GetPrefabType(target) == PrefabType.Prefab) return;
+
+			Inject(serializedObject, target, forceInject);
 		}
 
 		private static void Inject(SerializedObject serializedObject, UnityEngine.Object obj, bool forceInject)

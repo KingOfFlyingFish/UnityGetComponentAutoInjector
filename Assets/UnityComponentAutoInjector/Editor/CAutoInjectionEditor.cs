@@ -134,7 +134,7 @@ namespace UnityEditor
 
 			serializedObject.Update();
 				CAutoInjector.Inject(serializedObject, forceInject);
-			serializedObject.ApplyModifiedProperties(); 
+			serializedObject.ApplyModifiedProperties();
 		}
 
 		private void OnEnable()
