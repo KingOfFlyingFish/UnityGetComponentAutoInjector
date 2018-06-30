@@ -53,6 +53,9 @@ namespace UnityEditor
 
 		private static void OnUpdateEditor()
 		{
+			if (EditorApplication.isPlaying && EditorApplication.isCompiling)
+				EditorApplication.isPlaying = false;
+			
 			if (EditorPrefs.GetBool(_injectionToPlay))
 			{
 				InjectFor_CurrentScene();
