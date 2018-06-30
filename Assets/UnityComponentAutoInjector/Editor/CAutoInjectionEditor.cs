@@ -10,84 +10,137 @@
 
 namespace UnityEditor
 {
-    using System.Collections.Generic;
     using UnityEngine;
+	using UnityEngine.SceneManagement;
+	using UnityEditor.Callbacks;
 
-    [CustomEditor(typeof(MonoBehaviour), true)/*, CanEditMultipleObjects*/]
-    public class CAutoInjectionEditor : Editor
+	[CustomEditor(typeof(MonoBehaviour), true), CanEditMultipleObjects]
+	[InitializeOnLoad]
+	public class CAutoInjectionEditor : Editor
     {
-        public static List<SerializedObject> _serializedObjectList = new List<SerializedObject>();
+		private const string _isPressedPlayButton = "isPressedPlayButton";
+		private const string _isPlayWithInjected = "isPlayWithInjected";
+		private const string _isPlayWithInjectedTime = "_isPlayWithInjectedTime";
+		private const float _delayedInjectionTime = 1.5f;
 
-        [MenuItem("CONTEXT/MonoBehaviour/Force Auto Injection")]
-        private static void ForceAutoInjection()
+		static CAutoInjectionEditor()
+		{
+			EditorApplication.update += OnUpdateEditor;
+		}
+
+		[MenuItem("CONTEXT/MonoBehaviour/Force auto inject this")]
+        private static void ForceInject(MenuCommand cmd)
         {
-            int count = _serializedObjectList.Count;
-            if (count == 0)
-                CDebug.LogWarning("Multi-object force auto injecting not supported.");
+			if (EditorApplication.isPlaying) return;
 
-            for (int i = 0; i < count; i++)
-                AutoInjection(_serializedObjectList[i], true);
-        }
+			Object obj = cmd.context;
 
-        [InitializeOnLoadMethod]
-        private static void OnPostCompile()
+			bool isSupported = true;
+			try
+			{
+				MonoBehaviour mono = (obj as MonoBehaviour);
+			}
+			catch
+			{
+				Debug.LogError("Only monobehaviour type supported");
+				isSupported = false;
+			}
+
+			if (isSupported)
+				InjectFrom_NoneSerializedObject(obj, true);
+		}
+
+		private static void OnUpdateEditor()
+		{
+			bool isPressedPlayButton = EditorPrefs.GetBool(_isPressedPlayButton);
+
+			if (EditorApplication.isPlaying == false && EditorApplication.isCompiling && EditorApplication.isPlayingOrWillChangePlaymode)
+			{ 
+				if (isPressedPlayButton == false)
+				{
+					EditorPrefs.SetBool(_isPressedPlayButton, true);
+					CDebug.Log("<color=red><b>Editor compiling and change play mode is detected!\n",
+					"After ", _delayedInjectionTime, " seconds, the play mode is stopped and the auto injection is completed and then play mode again.</b></color>");
+				}
+			}
+
+			bool isPlayWithInjected = EditorPrefs.GetBool(_isPlayWithInjected);
+			if (isPlayWithInjected)
+			{
+				float time = EditorPrefs.GetFloat(_isPlayWithInjectedTime);
+				if (time < EditorApplication.timeSinceStartup)
+				{
+					InjectFor_CurrentScene(); 
+
+					EditorPrefs.SetBool(_isPlayWithInjected, false);
+					EditorApplication.isPlaying = true;
+				}
+			}
+		}
+
+		[DidReloadScripts]
+		private static void OnReloadScripts()
+		{
+			if (EditorApplication.isCompiling && EditorApplication.isPlaying)
+				EditorApplication.isPlaying = false; 
+
+			bool isPressedPlayButton = EditorPrefs.GetBool(_isPressedPlayButton);
+			if (isPressedPlayButton)
+			{
+				EditorApplication.isPlaying = false;
+
+				EditorPrefs.SetBool(_isPressedPlayButton, false);
+				EditorPrefs.SetBool(_isPlayWithInjected, true);
+				EditorPrefs.SetFloat(_isPlayWithInjectedTime, (float)EditorApplication.timeSinceStartup + _delayedInjectionTime);
+			}
+			else
+				InjectFor_CurrentScene();
+		}
+
+		public static void InjectFor_CurrentScene()
+		{ 
+			Scene currentScene = SceneManager.GetActiveScene();
+			 
+			GameObject[] gameObjects = currentScene.GetRootGameObjects();
+			if (gameObjects == null) return;
+
+			int len = gameObjects.Length;
+			for (int i = 0; i < len; i++)
+			{
+				GameObject gameObject = gameObjects[i];
+				if (gameObject == null) continue;
+
+				MonoBehaviour[] monos = gameObject.GetComponentsInChildren<MonoBehaviour>(true);
+
+				int lenComponents = monos.Length;
+				for (int j = 0; j < lenComponents; j++)
+				{
+					MonoBehaviour mono = monos[j];
+					if (mono == null) continue;
+
+					InjectFrom_NoneSerializedObject(mono, false);
+				}
+			}
+		}
+
+		public static void InjectFrom_NoneSerializedObject(Object obj, bool forceInject)
+		{
+			InjectFrom_SerializedObject(new SerializedObject(obj), forceInject);
+		} 
+
+		public static void InjectFrom_SerializedObject(SerializedObject serializedObject, bool forceInject)
+		{
+			if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+
+			serializedObject.Update();
+				CAutoInjector.Inject(serializedObject, forceInject);
+			serializedObject.ApplyModifiedProperties(); 
+		}
+
+		private void OnEnable()
         {
-#if !UNITY_5
-            if (Application.isFocused 
-                || EditorApplication.isCompiling || EditorApplication.isTemporaryProject || EditorApplication.isPlayingOrWillChangePlaymode)
-            {
-                return;
-            }
-#endif
-            var objects = FindObjectsOfType<MonoBehaviour>();
-            if (objects == null)
-            {
-                return;
-            }
-
-            foreach(var obj in objects)
-            {
-                var so = new SerializedObject(obj);
-                if (so == null)
-                    return;
-                AutoInjection(so);
-            }
-        }
-
-        public static void AutoInjection(SerializedObject serializedObject, bool isForceInject = false)
-        {
-            serializedObject.Update();
-            CAutoInjector.Inject(serializedObject, isForceInject);
-            serializedObject.ApplyModifiedProperties();
-        }
-
-        public static void AutoInjectionWithForceList(SerializedObject serializedObject)
-        {
-            AutoInjection(serializedObject);
-            Add(serializedObject);
-        }
-
-        public static void Clear()
-        {
-            _serializedObjectList.Clear();
-        }
-
-        public static void Add(SerializedObject serializedObject)
-        {
-            if (_serializedObjectList.Contains(serializedObject)) return;
-
-            _serializedObjectList.Add(serializedObject);
-        }
-
-        private void OnEnable()
-        {
-            AutoInjectionWithForceList(serializedObject);
-        }
-
-        private void OnDisable()
-        {
-            Clear();
-        }
+			InjectFrom_SerializedObject(serializedObject, false);
+		}
     }
 }
 

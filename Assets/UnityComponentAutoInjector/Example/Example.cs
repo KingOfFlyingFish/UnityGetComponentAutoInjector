@@ -4,18 +4,29 @@ using UnityEngine;
 
 public class Example : MonoBehaviour
 {
-    [SerializeField, GetComponentInParent]
-    private Camera parent = null;
+	[SerializeField, GetComponent]
+	private Transform cachedTransform = null; 
 
-    [SerializeField, GetComponentInChildren]
-    private Camera children = null;
+	[SerializeField, GetComponent]
+	private GameObject cachedGameObject = null;
 
-    [SerializeField, GetComponentInChildrenOnly(false)]
-    private Camera childrenOnly = null;
+	[SerializeField, GetComponentInParent]
+	private Camera parent = null;
 
-    [SerializeField, GetComponent]
-    private Camera example = null;
+	[SerializeField, GetComponentInChildren]
+	private Camera children = null;
 
-    [SerializeField, FindGameObject("Directional Light")]
+	[SerializeField, GetComponentInChildrenOnly(false)]
+	private Camera childrenOnly = null;
+
+	[SerializeField, GetComponent]
+	private Camera example = null;
+
+	[SerializeField, FindGameObject("Directional Light")]
     private Light find = null;
+
+	private void Awake()
+	{
+		CDebug.Log("(Example) Cached : ", cachedTransform, cachedGameObject);
+	}
 }

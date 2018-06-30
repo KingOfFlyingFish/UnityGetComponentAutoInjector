@@ -18,20 +18,14 @@ namespace UnityEditor
 	{
 		private static readonly BindingFlags _bindingFlags = (BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-		public static void Inject(SerializedObject serializedObject, bool isForceInject = false)
+		public static void Inject(SerializedObject serializedObject, bool forceInject)
 		{
-			if (EditorApplication.isPlaying) return;
-
 			if (serializedObject.targetObject == null) return;
-
-			UnityEngine.Object[] targetObjects = serializedObject.targetObjects;
-
-			int len = targetObjects.Length;
-			for (int i = 0; i < len; i++)
-				Inject(serializedObject, targetObjects[i], isForceInject);
+			 
+			Inject(serializedObject, serializedObject.targetObject, forceInject);
 		}
 
-		private static void Inject(SerializedObject serializedObject, UnityEngine.Object obj, bool isForceInject = false)
+		private static void Inject(SerializedObject serializedObject, UnityEngine.Object obj, bool forceInject)
 		{
 			FieldInfo[] fields = obj.GetType().GetFieldInfoWithBaseClass(_bindingFlags);
 
@@ -60,9 +54,7 @@ namespace UnityEditor
 
 					if (fieldType.IsArray)
 					{
-						if (isForceInject == false && property.arraySize > 0) continue;
-
-						property.arraySize = 0;
+						if (forceInject == false && property.arraySize > 0) continue;
 
 						if (IsGetComponentsAttribute(obj, attribute, fieldInfo, elementType, out componentOut))
 						{
@@ -77,7 +69,7 @@ namespace UnityEditor
 								prop.objectReferenceValue = (array.GetValue(k) as UnityEngine.Object);
 							}
 
-							if (length <= 0)
+							if (length == 0)
 								componentOut = null;
 						}
 						else
@@ -87,9 +79,7 @@ namespace UnityEditor
 					{
 						if (fieldType.GetGenericTypeDefinition() == typeof(List<>))
 						{
-							if (isForceInject == false && property.arraySize > 0) continue;
-
-							property.arraySize = 0;
+							if (forceInject == false && property.arraySize > 0) continue;
 
 							if (IsGetComponentsAttribute(obj, attribute, fieldInfo, fieldType.GetGenericArguments()[0], out componentOut))
 							{
@@ -109,7 +99,7 @@ namespace UnityEditor
 									length++;
 								}
 
-								if (length <= 0)
+								if (length == 0)
 									componentOut = null;
 							}
 							else
@@ -118,9 +108,7 @@ namespace UnityEditor
 					}
 					else
 					{
-						if (isForceInject == false && property.objectReferenceValue != null) continue;
-
-						property.objectReferenceValue = null;
+						if (forceInject == false && property.objectReferenceValue.HasValue()) continue;
 
 						if (IsGetComponentAttribute(obj, attribute, fieldInfo, fieldType, out componentOut))
 							property.objectReferenceValue = (componentOut as UnityEngine.Object);
@@ -128,7 +116,7 @@ namespace UnityEditor
 							LogToInjectionFailed(obj, attribute, fieldInfo);
 					}
 
-					if (isInjected == false && componentOut != null)
+					if (isInjected == false && componentOut.HasValue())
 						isInjected = true;
 				}
 			}
@@ -162,7 +150,7 @@ namespace UnityEditor
 			else if (attribute is FindObjectOfTypeAttribute)
 				componentsOut = typeof(UnityEngine.Object).Invoke(obj, "FindObjectsOfType", new[] { typeof(Type) }, elementType);
 
-			return componentsOut.IsValidType();
+			return componentsOut.HasValue();
 		}
 
 		private static bool IsGetComponentAttribute(UnityEngine.Object obj, object attribute, FieldInfo fieldInfo, Type fieldType, out object componentOut)
@@ -198,7 +186,7 @@ namespace UnityEditor
 			else if (attribute is FindObjectOfTypeAttribute)
 				componentOut = typeof(UnityEngine.Object).Invoke(obj, "FindObjectOfType", new[] { typeof(Type) }, fieldType);
 
-			return componentOut.IsValidType();
+			return componentOut.HasValue();
 		}
 
 		private static void LogToInjectionFailed(UnityEngine.Object obj, object attribute, FieldInfo fieldInfo)
@@ -217,7 +205,7 @@ namespace UnityEditor
 			CDebug.Log(obj, "<b><i>", obj, " <color=green>Auto injection complete.</color></i></b>");
 		}
 
-		private static bool IsValidType(this object referenceType)
+		private static bool HasValue(this object referenceType)
 		{
 			if (referenceType == null) return false;
 

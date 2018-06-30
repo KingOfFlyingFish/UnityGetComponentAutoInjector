@@ -123,7 +123,7 @@ GameObject:
   - component: {fileID: 1082515743}
   - component: {fileID: 1082515742}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Example
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -140,10 +140,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f898dae95e59a84e9213cdbcfcbb7d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cachedTransform: {fileID: 1082515743}
+  cachedGameObject: {fileID: 1082515741}
   parent: {fileID: 0}
   children: {fileID: 0}
   childrenOnly: {fileID: 0}
   example: {fileID: 0}
+  find: {fileID: 1346007311}
 --- !u!4 &1082515743
 Transform:
   m_ObjectHideFlags: 0
