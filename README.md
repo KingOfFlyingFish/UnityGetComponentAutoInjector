@@ -33,6 +33,8 @@
 								  // 언더바는 자동으로 삭제되고 소문자로 바뀐뒤에 찾습니다.
 
 [FindGameObject("오브젝트 이름")] public GameObject _gameObject;         // 현재 씬에 존재하는 게임오브젝트를 찾습니다.
+[FindGameObject("오브젝트 이름")] public ClassExample _objectExample;
+
 [FindGameObjectWithTag("태그 이름")] public GameObject _gameObjectTag;     // 현재 씬에서 해당 태그가 설정 되어있는 게임오브젝트를 찾습니
 [FindGameObjectWithTag("태그 이름")] public GameObject[] _gameObjectsTag;   // 현재 씬에서 해당 태그가 붙어있는 게임오브젝트들을 모두 찾습니다.
 [FindGameObjectWithTag("태그 이름")] public List<GameObject> _gameObjectListTag;
