@@ -9,7 +9,6 @@
 namespace UnityEditor
 {
 	using UnityEngine;
-	using UnityEngine.SceneManagement;
 	using UnityEditor.Callbacks;
 	using System.Collections.Generic;
 
@@ -19,22 +18,18 @@ namespace UnityEditor
 	{
 		private const string _isPressedPlayButton = "isPressedPlayButton";
 		private const string _injectionToNextFrame = "injectionToNextFrame";
-		private const string _exitingPlayMode = "exitingPlayMode";
+		private const string _isPlaying = "isPlaying";
+
+		private enum PlayModeState
+		{
+			EnteredPlayMode, ExitingPlayMode
+		}
 
 		private static HashSet<int> _hashCodes = new HashSet<int>();
 
 		static CAutoInjectionEditor()
 		{
 			EditorApplication.update += OnUpdateEditor;
-			EditorApplication.playModeStateChanged += OnChangeStateEditor;
-		}
-
-		private static void OnChangeStateEditor(PlayModeStateChange state)
-		{
-			if (EditorPrefs.GetBool(_injectionToNextFrame)) return;
-
-			if (state == PlayModeStateChange.ExitingPlayMode)
-				EditorPrefs.SetBool(_exitingPlayMode, true);
 		}
 
 		[MenuItem("CONTEXT/MonoBehaviour/Force auto inject this")]
@@ -49,7 +44,33 @@ namespace UnityEditor
 			InjectFor_CurrentScene();
 		}
 
-		private static void OnUpdateEditor()
+		private static void OnPlayModeStateChanged(PlayModeState playModeState)
+		{
+			if (playModeState == PlayModeState.ExitingPlayMode)
+				InjectFor_CurrentScene();
+		}
+
+		private static void OnUpdatePlayModeState()
+		{
+			if (EditorApplication.isPlaying)
+			{
+				if (EditorPrefs.GetBool(_isPlaying) == false)
+				{
+					EditorPrefs.SetBool(_isPlaying, true);
+					OnPlayModeStateChanged(PlayModeState.EnteredPlayMode);
+				}
+			}
+			else
+			{
+				if (EditorPrefs.GetBool(_isPlaying))
+				{
+					EditorPrefs.SetBool(_isPlaying, false);
+					OnPlayModeStateChanged(PlayModeState.ExitingPlayMode);
+				}
+			}
+		}
+
+		private static void OnUpdateDetectCompiling()
 		{
 			if (EditorApplication.isPlaying && EditorApplication.isCompiling)
 				EditorApplication.isPlaying = false;
@@ -61,9 +82,6 @@ namespace UnityEditor
 				EditorPrefs.SetBool(_injectionToNextFrame, false);
 				EditorApplication.isPlaying = true;
 			}
-
-			if (EditorApplication.isPlaying == false && EditorPrefs.GetBool(_exitingPlayMode))
-				InjectFor_CurrentScene();
 
 			if (EditorApplication.isCompiling)
 			{
@@ -89,19 +107,22 @@ namespace UnityEditor
 			}
 		}
 
+		private static void OnUpdateEditor()
+		{
+			OnUpdatePlayModeState();
+			OnUpdateDetectCompiling();
+		}
+
 		public static void InjectFor_CurrentScene(bool forceInject = false)
 		{
 			if (EditorApplication.isPlayingOrWillChangePlaymode) return;
 
-			Scene currentScene = SceneManager.GetActiveScene();
+			List<GameObject> gameObjectList = GetSceneGameObjectsAll();
 
-			GameObject[] gameObjects = currentScene.GetRootGameObjects();
-			if (gameObjects == null) return;
-
-			int len = gameObjects.Length;
-			for (int i = 0; i < len; i++)
+			int count = gameObjectList.Count;
+			for (int i = 0; i < count; i++)
 			{
-				GameObject gameObject = gameObjects[i];
+				GameObject gameObject = gameObjectList[i];
 				if (gameObject == null) continue;
 
 				MonoBehaviour[] monos = gameObject.GetComponentsInChildren<MonoBehaviour>(true);
@@ -122,7 +143,7 @@ namespace UnityEditor
 			InjectFrom_SerializedObject(new SerializedObject(obj), forceInject);
 		}
 
-		public static void InjectFrom_SerializedObject(SerializedObject serializedObject, bool forceInject)
+		public static void InjectFrom_SerializedObject(SerializedObject serializedObject, bool forceInject = false)
 		{
 			if (EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode) return;
 
@@ -137,13 +158,34 @@ namespace UnityEditor
 			_hashCodes.Add(hashCode);
 
 			serializedObject.Update();
-				CAutoInjector.Inject(serializedObject, target, forceInject);
+			CAutoInjector.Inject(serializedObject, target, forceInject);
 			serializedObject.ApplyModifiedProperties();
 		}
 
 		private void OnEnable()
 		{
-			InjectFrom_SerializedObject(serializedObject, false);
+			InjectFrom_SerializedObject(serializedObject);
+		}
+
+		private static List<GameObject> GetSceneGameObjectsAll()
+		{
+			List<GameObject> newGameObjectList = new List<GameObject>();
+
+			GameObject[] gameObjects = Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[];
+
+			int len = gameObjects.Length;
+			for (int i = 0; i < len; i++)
+			{
+				GameObject gameObject = gameObjects[i];
+				if (gameObject.hideFlags != HideFlags.None) continue;
+
+				if (PrefabUtility.GetPrefabType(gameObject) == PrefabType.Prefab ||
+					PrefabUtility.GetPrefabType(gameObject) == PrefabType.ModelPrefab) continue;
+
+				newGameObjectList.Add(gameObject);
+			}
+
+			return newGameObjectList;
 		}
 	}
 }
