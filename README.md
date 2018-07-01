@@ -1,6 +1,6 @@
 # UnityComponentAutoInjector
 
-This assets is require Unity Version 5.3.0f4 or newer.
+* This assets is require Unity Version 5.3.0f4 or newer.
 [Tested 5.3.0f4 ~ 2018.2.0b10]
 
 It is automatically injected according to the type of variable, array, and list.
@@ -45,7 +45,7 @@ It works only in Unity Editor, so there is no problem when you play, load, or bu
 [FindObjectOfType] public List<ClassExample> _classListType;
 ```
 
-Caution :
+* Caution
   1. The private variable must contain the [SerializeField] serialization attribute unconditionally.
   2. To reinject the components' variables, press the gear and then [Force auto inject this].
   3. Automatic injection in dynamic object creation (new GameObject (name)) is not supported. Instead, use GetComponent, which is built-in to Unity.
