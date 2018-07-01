@@ -8,7 +8,7 @@
 It is automatically injected according to the type of variable, array, and list.
 If an inherited class also has this attribute, it is injected.
 
-* How injected
+#### How to injected
 The injection method is automatically injected after the script is compiled or when you add a component.
 It works only in Unity Editor, so there is no problem when you play, load, or build.
 
