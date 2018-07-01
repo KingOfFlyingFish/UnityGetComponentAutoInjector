@@ -42,17 +42,16 @@ It is automatically injected according to the type of variable, array, and list.
 ```
 
 #### Caution
-1. The private variable must contain the [SerializeField] serialization attribute unconditionally.
+1. The private variable must contain the **[SerializeField]** attribute unconditionally.
 
-2. To reinject the components' variables, press the gear and then [Force auto inject this].
+2. To reinject the components variables, press the gear and then **[Force auto inject this]**.
 
 3. Automatic injection in dynamic object creation (new GameObject (name)) is not supported. Instead, use GetComponent, which is built-in to Unity.
 
-4. If you are using another custom editor and want to be injected automatically when you add components, you can use the OnEnable implementation of the Editor code, Call this method CAutoInjectionEditor.InjectFrom_SerializedObject (serializedObject, false);
+4. If you are using another custom editor and want to be injected automatically when you add components, you can use the **void OnEnable()** implementation of the Editor code, **CAutoInjectionEditor.InjectFrom_SerializedObject(serializedObject);** Call this method 
 
 5. If you press the play button while compiling, it will play automatically after completing the auto injection.
 
 **If you this assets have a bug or want to request an improvement, use the Issues menu.**
-
 
 > MIT License
