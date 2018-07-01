@@ -1,4 +1,4 @@
-# UnityComponentAutoInjector    
+# Unity GetComponent Auto Injector    
 ### This assets is require Unity Version 5.3.0f4 or newer.
 > [Tested 5.3.0f4 ~ 2018.2.0b10]    
 #### How to injected
