@@ -104,8 +104,15 @@ namespace UnityEditor
 					{
 						if (forceInject == false && property.objectReferenceValue.HasValue()) continue;
 
+						property.objectReferenceValue = null;
+
 						if (IsGetComponentAttribute(obj, attribute, fieldInfo, fieldType, out componentOut))
+						{
 							property.objectReferenceValue = (componentOut as UnityEngine.Object);
+
+							if (property.objectReferenceValue.HasValue() == false)
+								LogToInjectionFailed(obj, attribute, fieldInfo);
+						}
 						else
 							LogToInjectionFailed(obj, attribute, fieldInfo);
 					}
@@ -132,6 +139,7 @@ namespace UnityEditor
 			else if (attribute is GetComponentInChildrenOnlyAttribute)
 				componentsOut = typeof(CGetComponentExtends).InvokeGeneric(obj, "GetComponentsInChildrenOnly", new[] { typeof(Component), typeof(bool) }, new[] { elementType }, obj,
 					(attribute as GetComponentInChildrenOnlyAttribute).@bool);
+
 
 			else if (attribute is GetComponentInParentAttribute)
 				componentsOut = typeof(MonoBehaviour).InvokeGeneric(obj, "GetComponentsInParent", new[] { typeof(bool) }, new[] { elementType },
@@ -179,7 +187,7 @@ namespace UnityEditor
 
 			else if (attribute is FindObjectOfTypeAttribute)
 				componentOut = typeof(UnityEngine.Object).Invoke(obj, "FindObjectOfType", new[] { typeof(Type) }, fieldType);
-
+			
 			return componentOut.HasValue();
 		}
 

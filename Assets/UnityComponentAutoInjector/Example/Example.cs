@@ -11,19 +11,22 @@ public class Example : MonoBehaviour
 	private GameObject cachedGameObject = null;
 
 	[SerializeField, GetComponentInParent]
-	private Camera parent = null;
+	private Transform parent = null;
 
 	[SerializeField, GetComponentInChildren]
-	private Camera children = null;
+	private Example children = null;
+
+	[SerializeField, GetComponentInChildrenOnly]
+	private Transform[] childrens = null;
 
 	[SerializeField, GetComponentInChildrenOnly(false)]
-	private Camera childrenOnly = null;
+	private Transform[] childrenOnly = null; 
 
-	[SerializeField, GetComponent]
-	private Camera example = null;
+	[SerializeField, FindGameObject("Main Camera")]
+    private Camera find = null;
 
 	[SerializeField, FindGameObject("Directional Light")]
-    private Light find = null;
+	private Light find2 = null;
 
 	private void Awake()
 	{
