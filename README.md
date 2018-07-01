@@ -1,10 +1,7 @@
 # UnityComponentAutoInjector
 
-This assets is require Unity Version 5.3 or newer.
-[Tested 5.3 ~ 2018.2.0b10]
-
-
-
+This assets is require Unity Version 5.3.0f4 or newer.
+[Tested 5.3.0f4 ~ 2018.2.0b10]
 
 변수, 배열, 리스트의 타입에 맞춰서 자동으로 주입됩니다.
 만약 상속 되어있는 클래스도 이 속성이 존재하면 모두 주입됩니다.
