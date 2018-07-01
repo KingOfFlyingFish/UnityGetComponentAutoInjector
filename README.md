@@ -2,7 +2,9 @@
 ### This assets is require Unity Version 5.3.0f4 or newer.
 > [Tested 5.3.0f4 ~ 2018.2.0b10]    
 #### How to injected
-It is automatically injected according to the type of variable, array, and list.  If an inherited class also has this attribute, it is injected.  The injection method is automatically injected after the script is compiled or when you add a component.  It works only in Unity Editor, so there is no problem when you play, load, or build.  
+It is automatically injected according to the type of variable, array, and list.  If an inherited class also has this attribute, it is injected.  The injection method is automatically injected after the script is compiled or when you add a component.  It works only in Unity Editor, so there is no problem when you play, load, or build.
+
+### Preview code
 ```csharp
 [SerializeField, HideInInspector(If you want to hiding variables), GetComponent] // If the variable is private,
 
@@ -39,14 +41,17 @@ It is automatically injected according to the type of variable, array, and list.
 [FindObjectOfType] public List<ClassExample> _classListType;
 ```
 
-* Caution
-  1. The private variable must contain the [SerializeField] serialization attribute unconditionally.
-  2. To reinject the components' variables, press the gear and then [Force auto inject this].
-  3. Automatic injection in dynamic object creation (new GameObject (name)) is not supported. Instead, use GetComponent, which is built-in to Unity.
-  4. If you are using another custom editor and want to be injected automatically when you add components, you can use the OnEnable implementation of the Editor code,
-     Call this method CAutoInjectionEditor.InjectFrom_SerializedObject (serializedObject, false);
-  5. If you press the play button while compiling, it will play automatically after completing the auto injection.
-  
+#### Caution
+1. The private variable must contain the [SerializeField] serialization attribute unconditionally.
+
+2. To reinject the components' variables, press the gear and then [Force auto inject this].
+
+3. Automatic injection in dynamic object creation (new GameObject (name)) is not supported. Instead, use GetComponent, which is built-in to Unity.
+
+4. If you are using another custom editor and want to be injected automatically when you add components, you can use the OnEnable implementation of the Editor code, Call this method CAutoInjectionEditor.InjectFrom_SerializedObject (serializedObject, false);
+
+5. If you press the play button while compiling, it will play automatically after completing the auto injection.
+
 * If you this assets have a bug or want to request an improvement, use the Issues menu.
 
 
