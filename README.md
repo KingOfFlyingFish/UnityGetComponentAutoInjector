@@ -3,62 +3,57 @@
 This assets is require Unity Version 5.3.0f4 or newer.
 [Tested 5.3.0f4 ~ 2018.2.0b10]
 
-변수, 배열, 리스트의 타입에 맞춰서 자동으로 주입됩니다.
-만약 상속 되어있는 클래스도 이 속성이 존재하면 모두 주입됩니다.
+It is automatically injected according to the type of variable, array, and list.
+If an inherited class also has this attribute, it is injected.
 
-주입되는 방식은 스크립트가 컴파일된 후 혹은, 컴퍼넌트를 추가할 시에 자동으로 주입됩니다.
-유니티 에디터에서만 적용되는 방식이라 플레이할때, 로딩할때, 빌드할때에 아무런 지장이 없습니다.
+The injection method is automatically injected after the script is compiled or when you add a component.
+It works only in Unity Editor, so there is no problem when you play, load, or build.
 
 ```csharp
-///만약 변수가 private 일때 속성 :
-[SerializeField, HideInInspector(변수를 가리고 싶은 경우), GetComponent]
+[SerializeField, HideInInspector(If you want to hiding variables), GetComponent] // If the variable is private,
 
-[GetComponent] public Transform _class; // GameObject 지원
+[GetComponent] public Transform _class; // GameObject type supported
 [GetComponent] public ClassExample[] _classes;
 [GetComponent] public List<ClassExample> _classList;
 
 [GetComponentInChildren] public ClassExample _class1;
 [GetComponentInChildren] public ClassExample[] _classes1;
-[GetComponentInChildren(true)] public List<ClassExample> _classList1; // 꺼져있는 오브젝트도 주입됩니다.
+[GetComponentInChildren(true)] public List<ClassExample> _classList1; // Include hide in active
 
 [GetComponentInParent] public ClassExample _class4;
 [GetComponentInParent] public ClassExample[] _classes4;
-[GetComponentInParent(true)] public List<ClassExample> _classList4; // 꺼져있는 오브젝트도 주입됩니다.
+[GetComponentInParent(true)] public List<ClassExample> _classList4; //  Include hide in active
 
-[GetComponentInChildrenOnly] public ClassExample _class2;           // 자식과 자식 계층구조 모두 찾습니다. 꺼져있는 오브젝트도 주입됩니다. GameObject 지원
-[GetComponentInChildrenOnly] public ClassExample[] _classes2;       // 이것도 마찬가지
-[GetComponentInChildrenOnly] public List<ClassExample> _classList2; // 이것도 마찬가지
-[GetComponentInChildrenOnly(false)] public List<ClassExample> _classList3; //false 로 설정하면 계층구조를 제외한 자식만 찾습니다.
+[GetComponentInChildrenOnly] public ClassExample _class2;           // Locate both the child and child hierarchies. Objects that are off are also injected.
+[GetComponentInChildrenOnly] public ClassExample[] _classes2;
+[GetComponentInChildrenOnly] public List<ClassExample> _classList2;
+[GetComponentInChildrenOnly(false)] public List<ClassExample> _classList3; // If set to false, only the children except the hierarchy are searched.
 
-[GetComponentInChildrenName("ObjectExample")] public ClassExample _objectExample; // ObjectExample 오브젝트가 주입됩니다. GameObject 지원
-[GetComponentInChildrenName] public ClassExample _objectExample;  // ObjectExample 오브젝트가 주입됩니다.
-								  // 이름이 없으면 변수이름으로 찾습니다.
-								  // 언더바는 자동으로 삭제되고 소문자로 바뀐뒤에 찾습니다.
+[GetComponentInChildrenName("ObjectExample")] public ClassExample _objectExample; // The ObjectExample object is injected.
+[GetComponentInChildrenName] public ClassExample _objectExample; // If the name does not exist, it looks for the variable name..
+								 // _ And m_ are automatically deleted and looked for after they are changed to lowercase.
 
-[FindGameObject("오브젝트 이름")] public GameObject _gameObject;         // 현재 씬에 존재하는 게임오브젝트를 찾습니다.
-[FindGameObject("오브젝트 이름")] public ClassExample _objectExample;
+[FindGameObject("Object name")] public GameObject _gameObject;         // Finds game objects that exist in the current scene.
+[FindGameObject("Object name")] public ClassExample _objectExample;
 
-[FindGameObjectWithTag("태그 이름")] public GameObject _gameObjectTag;     // 현재 씬에서 해당 태그가 설정 되어있는 게임오브젝트를 찾습니
-[FindGameObjectWithTag("태그 이름")] public GameObject[] _gameObjectsTag;   // 현재 씬에서 해당 태그가 붙어있는 게임오브젝트들을 모두 찾습니다.
-[FindGameObjectWithTag("태그 이름")] public List<GameObject> _gameObjectListTag;
+[FindGameObjectWithTag("Tag name")] public GameObject _gameObjectTag;     // Find the game object that has the tag in the current scene.
+[FindGameObjectWithTag("Tag name")] public GameObject[] _gameObjectsTag;
+[FindGameObjectWithTag("Tag name")] public List<GameObject> _gameObjectListTag;
 
-[FindObjectOfType] public ClassExample _classType;         // 현재 씬에 존재하는 타입을 찾아서 주입시킵니다.
-[FindObjectOfType] public ClassExample[] _classesType;     // 현재 씬에 존재하는 타입들을 찾아서 모두 주입시킵니다.
+[FindObjectOfType] public ClassExample _classType;         // Finds the type in the current scene and injects it.
+[FindObjectOfType] public ClassExample[] _classesType;
 [FindObjectOfType] public List<ClassExample> _classListType;
 ```
 
+Caution :
+  1. The private variable must contain the [SerializeField] serialization attribute unconditionally.
+  2. To reinject the components' variables, press the gear and then [Force auto inject this].
+  3. Automatic injection in dynamic object creation (new GameObject (name)) is not supported. Instead, use GetComponent, which is built-in to Unity.
+  4. If you are using another custom editor and want to be injected automatically when you add components, you can use the OnEnable implementation of the Editor code,
+     Call this method CAutoInjectionEditor.InjectFrom_SerializedObject (serializedObject, false);
+  5. If you press the play button while compiling, it will play automatically after completing the auto injection.
   
-주의 사항 :
-  1. private 변수는 [SerializeField] 직렬화 속성을 무조건 포함해야 합니다.
-  2. 해당 컴퍼넌트의 변수들을 재 주입 시키려면 톱니바퀴를 누른 후 [Force auto inject this] 을 누릅니다.
-  3. 이 에셋을 사용전에 이미 오브젝트가 Prefab 화가 되어있다면 다시 에디터로 옮겨서 재 주입을 시켜야 됩니다. (에러가 날 경우에만)
-  4. 동적 오브젝트 생성(new GameObject(name)) 에서의 자동주입은 당연히 미지원 입니다. 대신 유니티 기본 내장 되어있는 GetComponent 를 사용하세요.
-  5. 다른 커스텀 에디터를 사용중이고, 컴퍼넌트 추가할때 자동주입되기를 원하신다면 Editor 코드의 OnEnable 구현 혹은 상속을 받은 후
-     CAutoInjectionEditor.InjectFrom_SerializedObject(serializedObject, false); 를 호출하세요.
-  6. 컴파일 중일때 플레이 버튼을 누르면 컴파일이 끝난 뒤 자동주입 후 플레이됩니다.
-  
-기타 피드백은 및 개선사항은 Issues 에 작성해주세요.
-
+* If you this assets have a bug or want to request an improvement, use the Issues menu.
 
 MIT License
 
