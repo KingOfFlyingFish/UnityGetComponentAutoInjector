@@ -1,6 +1,6 @@
 # UnityComponentAutoInjector
 
-### > This assets is require Unity Version 5.3.0f4 or newer.
+### This assets is require Unity Version 5.3.0f4 or newer.
 > [Tested 5.3.0f4 ~ 2018.2.0b10]
 
 It is automatically injected according to the type of variable, array, and list.
