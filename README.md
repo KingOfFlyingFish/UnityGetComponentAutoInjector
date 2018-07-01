@@ -52,7 +52,7 @@ It is automatically injected according to the type of variable, array, and list.
 
 5. If you press the play button while compiling, it will play automatically after completing the auto injection.
 
-* If you this assets have a bug or want to request an improvement, use the Issues menu.
+**If you this assets have a bug or want to request an improvement, use the Issues menu.**
 
 
 > MIT License
