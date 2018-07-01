@@ -1,18 +1,8 @@
-# UnityComponentAutoInjector
-
+# UnityComponentAutoInjector  
 ### This assets is require Unity Version 5.3.0f4 or newer.
-> [Tested 5.3.0f4 ~ 2018.2.0b10]
-
-
-
-It is automatically injected according to the type of variable, array, and list.
-If an inherited class also has this attribute, it is injected.
-
+> [Tested 5.3.0f4 ~ 2018.2.0b10]  
 #### How to injected
-The injection method is automatically injected after the script is compiled or when you add a component.
-It works only in Unity Editor, so there is no problem when you play, load, or build.
-
-
+It is automatically injected according to the type of variable, array, and list.  If an inherited class also has this attribute, it is injected.  The injection method is automatically injected after the script is compiled or when you add a component.  It works only in Unity Editor, so there is no problem when you play, load, or build.  
 ```csharp
 [SerializeField, HideInInspector(If you want to hiding variables), GetComponent] // If the variable is private,
 
