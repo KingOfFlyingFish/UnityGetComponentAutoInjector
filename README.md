@@ -57,7 +57,7 @@ It works only in Unity Editor, so there is no problem when you play, load, or bu
   
 * If you this assets have a bug or want to request an improvement, use the Issues menu.
 
-MIT License
+> MIT License
 
 Copyright (c) 2018 KJH
 
